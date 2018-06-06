@@ -1,10 +1,10 @@
 #include <iostream>
 #include "rec.h"
-
+typedef unsigned short int _bit;
 using namespace std;
 
 int main() {
-    rec::TCPInter tcp;
+    rec::TCPInter serv(rec::BIT_SVR, 1500);
 
-    tcp.get();
+    serv.listen();
 }

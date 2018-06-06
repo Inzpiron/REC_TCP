@@ -18,14 +18,14 @@
 typedef unsigned short int _bit;
 
 
-bool checkBit(_bit, _bit);
+bool checkBit(_bit b1, _bit b2);
 
 namespace rec {
     const _bit BIT_ACK = 0x1;
     const _bit BIT_SYN = 0x2;
     const _bit BIT_FIN = 0x4;
 
-    const _bit BIT_SRV = 0x1;
+    const _bit BIT_SVR = 0x1;
     const _bit BIT_CLI = 0x2;
 
     class TCPInter;
@@ -36,8 +36,10 @@ private:
     struct sockaddr_in addr;
     struct hostent *h;
     int sd, rc, n, cliLen;
+
 public:
-    TCPInter(_bit b);
+    TCPInter(_bit b, int port);
+    void listen();
 };
 
 #endif
