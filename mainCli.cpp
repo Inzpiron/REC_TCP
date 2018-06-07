@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string>
 #include <string.h> /* memset() */
 #include <sys/time.h> /* select() */
 #include <stdlib.h>
@@ -36,9 +37,8 @@ int main(int argc, char *argv[]) {
 	 inet_ntoa(*(struct in_addr *)h->h_addr_list[0]));
 
   remoteServAddr.sin_family = h->h_addrtype;
-  memcpy((char *) &remoteServAddr.sin_addr.s_addr,
-	 h->h_addr_list[0], h->h_length);
-  remoteServAddr.sin_port = htons(REMOTE_SERVER_PORT);
+  memcpy((char *) &remoteServAddr.sin_addr.s_addr,h->h_addr_list[0], h->h_length);
+  remoteServAddr.sin_port = htons(std::stoi(argv[2]));
 
   /* socket creation */
   sd = socket(AF_INET,SOCK_DGRAM,0);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
 
   /* send data */
-  for(i=2;i<argc;i++) {
+  for(i=3;i<argc;i++) {
     rc = sendto(sd, argv[i], strlen(argv[i])+1, 0,
 		(struct sockaddr *) &remoteServAddr,
 		sizeof(remoteServAddr));

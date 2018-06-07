@@ -18,7 +18,6 @@
 typedef unsigned short int _bit;
 
 
-bool checkBit(_bit b1, _bit b2);
 
 namespace rec {
     const _bit BIT_ACK = 0x1;
@@ -30,16 +29,18 @@ namespace rec {
 
     class TCPInter;
     class PackageInter;
+
+    bool checkBit(_bit, _bit);
 }
 
 class rec::TCPInter {
 private:
-    struct sockaddr_in addr;
+    struct sockaddr_in _addr;
     int _socket;
-    int port;
+    int _port;
 
 public:
-    TCPInter(int);
+    TCPInter(_bit, int);
     void listen();
     void assert(_bit);
     void sendData();
