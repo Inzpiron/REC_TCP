@@ -29,17 +29,29 @@ namespace rec {
     const _bit BIT_CLI = 0x2;
 
     class TCPInter;
+    class PackageInter;
 }
 
 class rec::TCPInter {
 private:
     struct sockaddr_in addr;
-    struct hostent *h;
-    int sd, rc, n, cliLen;
+    int _socket;
+    int port;
 
 public:
-    TCPInter(_bit b, int port);
+    TCPInter(int);
     void listen();
+    void assert(_bit);
+    void sendData();
+};
+
+class rec::PackageInter {
+private:
+    _bit bit;
+    char * data;
+
+public:
+    PackageInter(_bit, char *);
 };
 
 #endif
