@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <string.h> /* memset() */
 #include <sys/time.h> /* select() */
+#include <thread>
+#include <future>
 
 typedef unsigned short int _bit;
 
@@ -35,15 +37,19 @@ namespace rec {
 
 class rec::TCPInter {
 private:
+    std::future<void>  _tlisten;
     struct sockaddr_in _addr;
     int _socket;
     int _port;
+    size_t buffer_size;
 
-public:
-    TCPInter(_bit, int);
-    void listen();
     void assert(_bit);
-    void sendData();
+    void listen();
+public:
+    TCPInter(_bit, int, size_t);
+    void start();
+    void wait_close();
+    void send_data();
 };
 
 class rec::PackageInter {

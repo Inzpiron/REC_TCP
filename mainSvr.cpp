@@ -7,7 +7,8 @@ using namespace std;
 
 int main(int argc, char ** argv) {
     int porta = stoi(argv[1]);
-    rec::TCPInter serv(rec::BIT_SVR, porta);
+    rec::TCPInter serv(rec::BIT_SVR, porta, 1500);
 
-    serv.listen();
+    serv.start();
+    serv.wait_close();
 }
