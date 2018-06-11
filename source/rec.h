@@ -26,12 +26,12 @@
 typedef unsigned short int _bit;
 
 namespace rec {
-    const _bit BIT_SYN     = 0x1;
-    const _bit BIT_SYN_ACK = 0x2;
-    const _bit BIT_FIN     = 0x4;
-    const _bit BIT_FIN_ACK = 0x8;
-    const _bit BIT_ACK     = 0x16;
-    const _bit BIT_DTA     = 0x32;
+    const _bit BIT_SYN     = 1;
+    const _bit BIT_SYN_ACK = 2;
+    const _bit BIT_FIN     = 4;
+    const _bit BIT_FIN_ACK = 8;
+    const _bit BIT_ACK     = 16;
+    const _bit BIT_DTA     = 32;
 
     const _bit BIT_SVR = 0x1;
     const _bit BIT_CLI = 0x2;
@@ -49,6 +49,7 @@ private:
     char * data;
 
 public:
+    PackageInter();
     PackageInter(_bit, char *, int, int, bool);
     _bit  get_bit(void);
     unsigned  _port;
@@ -60,7 +61,8 @@ public:
 
 class rec::pkg_addr {
 public:
-    pkg_addr(PackageInter&, sockaddr_in);
+    pkg_addr();
+    pkg_addr(PackageInter, struct sockaddr_in);
     PackageInter pkg;
     sockaddr_in addr;
 };
@@ -76,22 +78,18 @@ private:
 
     std::mutex mtx_entry_buffer;
     std::mutex mtx_send_buffer;
-    std::vector<unsigned>  _cli_port_list;
     std::map<int, bool> _pkg_received;
 
-    struct sockaddr_in _addr;
-    struct sockaddr_in _sv_addr;  //CLIENT
+    struct sockaddr_in _my_addr;
+    struct sockaddr_in _other_addr;  //CLIENT
     int _socket;
-    unsigned _port;
 
     int _n_seq;
     int _n_ack;
 
-
-    unsigned _cli_id; //CLIENT
-    unsigned _cli_id_sum;
-
     _bit entity;
+
+    bool _hand_shaked;
 
     void assert(PackageInter *, sockaddr_in &);
     void listen();
@@ -99,10 +97,15 @@ private:
     void check_sender_buffer();
     void sendd(PackageInter *, sockaddr_in &);
 public:
+    TCPInter();
     TCPInter(_bit, int, size_t); //SERVER
     TCPInter(_bit, size_t); //CLIENT
 
     void connect(int, char *); //CLIENT
+
+    void send_data(char *); //CLIENT
+
+    char * receive_data();
 
     void start();
     void wait_close();
