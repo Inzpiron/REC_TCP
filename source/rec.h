@@ -46,11 +46,12 @@ namespace rec {
 class rec::PackageInter {
 private:
     _bit bit;
-    char * data;
 
 public:
+    char * data;
     PackageInter();
-    PackageInter(_bit, char *, int, int, bool);
+    PackageInter(_bit, char *, int, int, bool, size_t);
+    PackageInter(size_t bs);
     _bit  get_bit(void);
     unsigned  _port;
     int _cli_id;

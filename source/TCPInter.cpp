@@ -104,7 +104,7 @@ void rec::TCPInter::connect(int svport, char * svaddr) {
         memcpy((char *) &this->_other_addr.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
         this->_other_addr.sin_port = htons(svport);
 
-        PackageInter p(BIT_SYN, NULL, this->_n_seq, this->_n_ack, true);
+        PackageInter p(BIT_SYN, NULL, this->_n_seq, this->_n_ack, true, this->buffer_size);
         p._port = ntohs(this->_my_addr.sin_port);
 
         cout << "<-sending SYN to server" << endl <<
@@ -123,20 +123,6 @@ void rec::TCPInter::connect(int svport, char * svaddr) {
     } else exit(0);
 }
 
-/*
-void rec::TCPInter::check_entry_buffer() {
-    while(true) {
-        if(!this->entry_buffer.empty()) {
-            PackageInter p_    = this->entry_buffer.front().first[0];
-            sockaddr_in  addr_ = this->entry_buffer.front().second;
-            addr_.sin_port = htons(p_._port);
-            this->assert(&p_, addr_);
-            this->_n_ack++;
-        }
-    }
-}
-*/
-
 void rec::TCPInter::check_sender_buffer() {
     while(true) {
         if(!this->sender_buffer.empty()) {
@@ -144,7 +130,7 @@ void rec::TCPInter::check_sender_buffer() {
             sockaddr_in  addr_ = this->sender_buffer.front().addr;
 
             this->sendd(&p_, addr_);
-            this_thread::sleep_for(chrono::milliseconds(1000));
+            this_thread::sleep_for(chrono::milliseconds(5));
 
             if(this->_pkg_received[p_._n_seq] || p_.get_bit() == rec::BIT_ACK) {
                 mtx_send_buffer.lock();
@@ -152,7 +138,6 @@ void rec::TCPInter::check_sender_buffer() {
                 mtx_send_buffer.unlock();
             } else {
                 cout << "<#Sending pkg again" << endl;
-                this_thread::sleep_for(chrono::milliseconds(50));
             }
         }
     }
@@ -160,7 +145,7 @@ void rec::TCPInter::check_sender_buffer() {
 
 void rec::TCPInter::listen() {
     while(1) {
-        PackageInter * p = new PackageInter();
+        PackageInter * p = new PackageInter(this->buffer_size);
         sockaddr_in senderAddr;
 
         /* receive message */
@@ -190,7 +175,7 @@ void rec::TCPInter::assert(rec::PackageInter * p, sockaddr_in & senderAddr) {
         this->_other_addr = senderAddr;
         this->_other_addr.sin_port = htons((*p)._port);
 
-        PackageInter * p_to_send = new PackageInter(rec::BIT_SYN_ACK, NULL, this->_n_seq, this->_n_ack, true);
+        PackageInter * p_to_send = new PackageInter(rec::BIT_SYN_ACK, NULL, this->_n_seq, this->_n_ack, true, this->buffer_size);
 
         mtx_send_buffer.lock();
         this->sender_buffer.push(pkg_addr(*p_to_send, this->_other_addr));
@@ -207,7 +192,7 @@ void rec::TCPInter::assert(rec::PackageInter * p, sockaddr_in & senderAddr) {
         this->_n_ack = 0;
         this->_hand_shaked = true;
 
-        PackageInter * p_to_send = new PackageInter(rec::BIT_ACK, NULL, this->_n_seq, this->_n_ack, true);
+        PackageInter * p_to_send = new PackageInter(rec::BIT_ACK, NULL, this->_n_seq, this->_n_ack, true, this->buffer_size);
 
         mtx_send_buffer.lock();
         this->sender_buffer.push(pkg_addr(*p_to_send, this->_other_addr));
@@ -229,8 +214,10 @@ void rec::TCPInter::assert(rec::PackageInter * p, sockaddr_in & senderAddr) {
     }
 
     else if(rec::BIT_DTA == (*p).get_bit()) {
-        PackageInter * p_to_send = new PackageInter(rec::BIT_ACK, NULL, this->_n_seq, (*p)._n_seq, true);
+        PackageInter * p_to_send = new PackageInter(rec::BIT_ACK, NULL, this->_n_seq, (*p)._n_seq, true, this->buffer_size);
         this->sender_buffer.push(pkg_addr(*p_to_send, this->_other_addr));
+        //cout << (*p).data << endl;
+        printf("%s\n", (*p).data);
     }
 }
 
@@ -239,7 +226,7 @@ void rec::TCPInter::send_data(char * _data) {
         cout << "Handshake não executado" << endl;
         exit(0);
     } else {
-        PackageInter * p_to_send = new PackageInter(rec::BIT_DTA, _data, this->_n_seq, -1, true);
+        PackageInter * p_to_send = new PackageInter(rec::BIT_DTA, _data, this->_n_seq, -1, true, this->buffer_size);
 
         mtx_send_buffer.lock();
         this->sender_buffer.push(pkg_addr(*p_to_send, this->_other_addr));

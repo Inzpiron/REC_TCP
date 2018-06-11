@@ -21,9 +21,23 @@ rec::PackageInter::PackageInter() {
     this->_n_ack  = -1;
 }
 
-rec::PackageInter::PackageInter(_bit b, char * d, int nseq, int nack, bool last) {
+rec::PackageInter::PackageInter(size_t bs) {
+    this->bit  = 0;
+    this->data = new char[bs];
+    this->_port   = -1;
+    this->_last   = -1;
+    this->_n_seq  = -1;
+    this->_n_ack  = -1;
+}
+
+rec::PackageInter::PackageInter(_bit b, char * d, int nseq, int nack, bool last, size_t bs) {
     this->bit  = b;
-    this->data = d;
+    this->data   = new char[bs];
+
+    if(d != NULL) {
+        strcpy(d, this->data);
+    }
+
     this->_port   = -1;
     this->_last   = last;
     this->_n_seq  = nseq;
