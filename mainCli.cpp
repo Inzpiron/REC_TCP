@@ -13,9 +13,8 @@ int main(int argc, char ** argv) {
     cli.connect(svport, (char *) "localhost");
     cli.start();
 
-    char * dat = new char[bs];
-    strcpy(dat, "primeiro dado");
-    cli.send_data(dat);
+    cli.send_data((char*) "PRIMEIRA BOSTA ENVIADA PELO CLIENTE");
+    cli.send_data((char*) "SEGUNDA BOSTA ENVIADA PELO CLIENTE");
 
     cli.wait_close();
 }

@@ -40,39 +40,26 @@ namespace rec {
     class TCPInter;
     class pkg_addr;
 
-    bool checkBit(_bit, _bit);
+    struct PkgInter;
 }
 
-class rec::PackageInter {
-private:
+struct rec::PkgInter {
     _bit bit;
-
-public:
-    char * data;
-    PackageInter();
-    PackageInter(_bit, char *, int, int, bool, size_t);
-    PackageInter(size_t bs);
-    _bit  get_bit(void);
-    unsigned  _port;
-    int _cli_id;
-    int _n_seq;
-    int _n_ack;
+    char _data[1500];
+    int  _n_seq;
+    int  _n_ack;
     bool _last;
-};
 
-class rec::pkg_addr {
-public:
-    pkg_addr();
-    pkg_addr(PackageInter, struct sockaddr_in);
-    PackageInter pkg;
-    sockaddr_in addr;
+    PkgInter();
+    PkgInter(_bit, char *, int, int, bool);
 };
+typedef struct rec::PkgInter PkgInter;
 
 class rec::TCPInter {
 private:
     size_t buffer_size;
-    std::map<int, pkg_addr >  entry_buffer;
-    std::queue < pkg_addr >  sender_buffer;
+    std::map<int, std::pair<PkgInter, sockaddr_in> >  entry_buffer;
+    std::queue < std::pair<PkgInter, sockaddr_in>  >  sender_buffer;
 
     std::future<void> _thread_listen;
     std::future<void> _thread_sender_buffer;
@@ -92,11 +79,11 @@ private:
 
     bool _hand_shaked;
 
-    void assert(PackageInter *, sockaddr_in &);
+    void assert(PkgInter&, sockaddr_in &);
     void listen();
     void check_entry_buffer();
     void check_sender_buffer();
-    void sendd(PackageInter *, sockaddr_in &);
+    void sendd(PkgInter&, sockaddr_in &);
 public:
     TCPInter();
     TCPInter(_bit, int, size_t); //SERVER
