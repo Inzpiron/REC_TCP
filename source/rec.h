@@ -72,8 +72,10 @@ private:
     struct sockaddr_in _other_addr;  //CLIENT
     int _socket;
 
+
+    bool _flag_first;
     int _n_seq;
-    int _n_ack;
+    int _n_seq_send;
 
     _bit entity;
 
