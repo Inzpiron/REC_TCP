@@ -11,6 +11,8 @@ int main(int argc, char ** argv) {
     rec::TCPInter serv(rec::BIT_SVR, porta, 1500);
 
     serv.start();
-    serv.send_data((char*) "STRING DO SERVIDOR");
+    //serv.send_data((char*) "STRING DO SERVIDOR");
+    //serv.send_data((char*) "STRING DO SERVIDOR2");
+    //serv.send_data((char*) "STRING DO SERVIDOR3");
     serv.wait_close();
 }

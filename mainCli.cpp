@@ -12,10 +12,12 @@ int main(int argc, char ** argv) {
 
     cli.connect(svport, (char *) "localhost");
     cli.start();
-    this_thread::sleep_for(chrono::milliseconds(4000));
     cli.send_data((char*) "PRIMEIRA BOSTA ENVIADA PELO CLIENTE");
     //this_thread::sleep_for(chrono::milliseconds(4000));
     cli.send_data((char*) "SEGUNDA BOSTA ENVIADA PELO CLIENTE");
+        cli.send_data((char*) "SEGUNDA BOSTA ENVIADA PELO CLIENTE");
+            cli.send_data((char*) "SEGUNDA BOSTA ENVIADA PELO CLIENTE");
+                cli.send_data((char*) "SEGUNDA BOSTA ENVIADA PELO CLIENTE");
 
     cli.wait_close();
 }

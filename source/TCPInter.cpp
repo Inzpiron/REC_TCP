@@ -92,6 +92,9 @@ void rec::TCPInter::start() {
     while(!this->_hand_shaked){
 
     }
+
+    if(this->entity == rec::BIT_CLI)
+        this_thread::sleep_for(chrono::milliseconds(500));
 }
 
 void rec::TCPInter::wait_close() {
@@ -139,7 +142,7 @@ void rec::TCPInter::check_sender_buffer() {
             sockaddr_in  addr_ = this->sender_buffer.front().second;
 
             this->sendd(p_, addr_);
-            this_thread::sleep_for(chrono::milliseconds(500));
+            this_thread::sleep_for(chrono::milliseconds(250));
 
             if(this->_pkg_received[p_._n_seq] || p_.bit == rec::BIT_ACK) {
                 mtx_send_buffer.lock();
@@ -209,11 +212,13 @@ void rec::TCPInter::assert(rec::PkgInter& p, sockaddr_in & senderAddr) {
     }
 
     else if(rec::BIT_ACK == p.bit) {
+        this->_n_seq++;
         if(this->entity == rec::BIT_SVR && p._n_ack == 0)
             this->_hand_shaked = true;
 
         cout << "->ACK: From " << inet_ntoa(senderAddr.sin_addr) << endl << endl;
-        this->_n_seq++;
+        if(this->entity == rec::BIT_SVR)
+            cout << this->_n_seq << endl;
         //cout << "****** " << this->_n_seq << endl;
         //if(p._n_ack == this->_n_seq) {
         //    this->_n_seq++;
@@ -242,7 +247,6 @@ void rec::TCPInter::send_data(char * _data) {
             _flag_first = true;
         }
 
-        cout << "****** " << this->_n_seq_send << endl;
         PkgInter p_to_send(rec::BIT_DTA, _data, this->_n_seq_send, -1, true);
         cout << "<-sending DTA to " << inet_ntoa(this->_other_addr.sin_addr) << " : " << ntohs(this->_other_addr.sin_port) << endl
              << "<-PKG sending: BIT = " << p_to_send.bit << " _n_seq = " << p_to_send._n_seq << " _n_ack = " << p_to_send._n_ack << endl << endl;
