@@ -141,7 +141,7 @@ void rec::TCPInter::check_sender_buffer() {
             PkgInter p_        = this->sender_buffer.front().first;
             sockaddr_in  addr_ = this->sender_buffer.front().second;
 
-            this->sendd(p_, addr_);
+            this->send(p_, addr_);
             this_thread::sleep_for(chrono::milliseconds(250));
 
             if(this->_pkg_received[p_._n_seq] || p_.bit == rec::BIT_ACK) {
@@ -182,6 +182,8 @@ void rec::TCPInter::assert(rec::PkgInter& p, sockaddr_in & senderAddr) {
     (this->_pkg_received)[p._n_ack] = true;
 
     if(p.bit == rec::BIT_SYN) {
+        this->_n_seq     = 0;
+        this->_n_seq_ack = 0;
         this->_other_addr = senderAddr;
 
         PkgInter p_to_send(rec::BIT_SYN_ACK, NULL, this->_n_seq, 0, true);
@@ -197,7 +199,8 @@ void rec::TCPInter::assert(rec::PkgInter& p, sockaddr_in & senderAddr) {
     }
 
     else if(rec::BIT_SYN_ACK == p.bit){
-        this->_n_seq = 1;
+        this->_n_seq     = 1;
+        this->_n_seq_ack = 0;
         PkgInter p_to_send(rec::BIT_ACK, NULL, -1, p._n_seq, true);
 
         mtx_send_buffer.lock();
@@ -212,24 +215,20 @@ void rec::TCPInter::assert(rec::PkgInter& p, sockaddr_in & senderAddr) {
     }
 
     else if(rec::BIT_ACK == p.bit) {
-        this->_n_seq++;
+        if(p._n_ack == this->_n_seq) {
+            this->_n_seq++;
+        }
+
         if(this->entity == rec::BIT_SVR && p._n_ack == 0)
             this->_hand_shaked = true;
 
         cout << "->ACK: From " << inet_ntoa(senderAddr.sin_addr) << endl << endl;
-        if(this->entity == rec::BIT_SVR)
-            cout << this->_n_seq << endl;
-        //cout << "****** " << this->_n_seq << endl;
-        //if(p._n_ack == this->_n_seq) {
-        //    this->_n_seq++;
-        //    cout << "--_n_seq = " << _n_seq << endl;
-        //}
     }
 
     else if(rec::BIT_DTA == p.bit) {
         PkgInter p_to_send(rec::BIT_ACK, NULL, -1, p._n_seq, true);
-        this->sender_buffer.push({p_to_send, this->_other_addr});
-
+        //this->sender_buffer.push({p_to_send, this->_other_addr});
+        this->send(p_to_send, this->_other_addr);
         cout << "->DTA: From " << inet_ntoa(senderAddr.sin_addr) << endl
              << "->" << (p)._data << endl
              << "<-sending ACK to remetent" << endl
@@ -242,10 +241,7 @@ void rec::TCPInter::send_data(char * _data) {
         cout << "Handshake não executado" << endl;
         exit(0);
     } else {
-        if(_flag_first == false) {
-            this->_n_seq_send = this->_n_seq;
-            _flag_first = true;
-        }
+        if(this->_n_seq_send == -1) this->_n_seq_send = this->_n_seq;
 
         PkgInter p_to_send(rec::BIT_DTA, _data, this->_n_seq_send, -1, true);
         cout << "<-sending DTA to " << inet_ntoa(this->_other_addr.sin_addr) << " : " << ntohs(this->_other_addr.sin_port) << endl
@@ -257,7 +253,7 @@ void rec::TCPInter::send_data(char * _data) {
     }
 }
 
-void rec::TCPInter::sendd(PkgInter& p, sockaddr_in& recipient) {
+void rec::TCPInter::send(PkgInter& p, sockaddr_in& recipient) {
     if(sendto(this->_socket, &p, sizeof(PkgInter), 0, (struct sockaddr *) &recipient, sizeof(recipient)) < 0) {
         close(this->_socket);
         exit(0);

@@ -73,9 +73,12 @@ private:
     int _socket;
 
 
+    int _w_size = 2;
+
     bool _flag_first;
     int _n_seq;
-    int _n_seq_send;
+    int _n_seq_send = -1;
+    int _n_seq_ack;
 
     _bit entity;
 
@@ -85,7 +88,7 @@ private:
     void listen();
     void check_entry_buffer();
     void check_sender_buffer();
-    void sendd(PkgInter&, sockaddr_in &);
+    void send(PkgInter&, sockaddr_in &);
 public:
     TCPInter();
     TCPInter(_bit, int, size_t); //SERVER
