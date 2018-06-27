@@ -1,7 +1,7 @@
 #ifndef __REC_H_INCLUDED__
 #define __REC_H_INCLUDED__
 
-//http://www.inf.pucrs.br/~cnunes/redes_si/Sockets.htm
+//Auxilio -> http://www.inf.pucrs.br/~cnunes/redes_si/Sockets.htm
 
 #include <iostream>
 #include <bitset>
@@ -22,6 +22,7 @@
 #include <mutex>
 #include <utility>
 #include <queue>
+#include <fstream>
 
 typedef unsigned short int _bit;
 
@@ -33,8 +34,8 @@ namespace rec {
     const _bit BIT_ACK     = 16;
     const _bit BIT_DTA     = 32;
 
-    const _bit BIT_SVR = 0x1;
-    const _bit BIT_CLI = 0x2;
+    const _bit BIT_SVR = 1;
+    const _bit BIT_CLI = 2;
 
     class PackageInter;
     class TCPInter;
@@ -57,15 +58,19 @@ typedef struct rec::PkgInter PkgInter;
 
 class rec::TCPInter {
 private:
+    std::ofstream log_file;
     size_t buffer_size;
     std::map<int, std::pair<PkgInter, sockaddr_in> >  entry_buffer;
     std::queue < std::pair<PkgInter, sockaddr_in>  >  sender_buffer;
+    std::queue < PkgInter > read_buffer;
 
     std::future<void> _thread_listen;
     std::future<void> _thread_sender_buffer;
 
     std::mutex mtx_entry_buffer;
     std::mutex mtx_send_buffer;
+    std::mutex mtx_read_buffer;
+
     std::map<int, bool> _pkg_received;
 
     struct sockaddr_in _my_addr;
@@ -75,10 +80,14 @@ private:
 
     int _w_size = 2;
 
+    bool _online = true;
     bool _flag_first;
     int _n_seq;
     int _n_seq_send = -1;
     int _n_seq_ack;
+
+
+    int _p_listen;
 
     _bit entity;
 
@@ -98,8 +107,9 @@ public:
 
     void send_data(char *); //CLIENT
 
-    char * receive_data();
+    char * listen_data();
 
+    void disconnect();
     void start();
     void wait_close();
     void send_data();

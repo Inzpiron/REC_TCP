@@ -8,11 +8,8 @@ using namespace std;
 int main(int argc, char ** argv) {
     //
     int porta = stoi(argv[1]);
-    rec::TCPInter serv(rec::BIT_SVR, porta, 1500);
-
+    rec::TCPInter serv(rec::BIT_SVR, porta, 5);
     serv.start();
-    serv.send_data((char*) "STRING DO SERVIDOR");
-    serv.send_data((char*) "STRING DO SERVIDOR2");
-    serv.send_data((char*) "STRING DO SERVIDOR3");
+    serv.listen_data();
     serv.wait_close();
 }
